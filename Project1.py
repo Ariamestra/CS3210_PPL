@@ -1,3 +1,4 @@
+#------------------------------------------------------
 DIGITS = '0123456789'
  
 class Token:
@@ -7,13 +8,14 @@ class Token:
     self.value = value
  
   def __repr__(self):
-    return f"Token({self.value}, '{self.type}')"
+    return f"Token('{self.value}', '{self.type}')"
  
 # TOKENS
-RR_INT  = 'RR_INT'
-RR_FLOAT = 'RR_FLOAT'
-RR_PLUS  = 'RR_PLUS'
-RR_MINUS = 'RR_MINUS'
+ME_INT  = 'ME_INT'
+ME_FLOAT = 'ME_FLOAT'
+ME_PLUS  = 'ME_PLUS'
+ME_MINUS = 'ME_MINUS'
+ME_DIGIT = 'ME_DIGIT'
  
 class Lexer:
   def __init__(self, fn, text):
@@ -35,7 +37,7 @@ class Lexer:
     print(self.current_char)
     while self.current_char != None:
        if self.current_char == '+':
-         tokens.append(Token(RR_PLUS))
+         tokens.append(Token(ME_PLUS))
        self.advance()
     return tokens
  
@@ -52,12 +54,15 @@ class Lexer:
      else:
          num_str += self.current_char
      self.advance()
+     #if dot_count <= 0 and <=9:
+        #return Token(ME_DIGIT, digit(num_str))
      if dot_count == 0:
-        return Token(RR_INT, int(num_str))
+        return Token(ME_INT, int(num_str))
      else:
-        return Token(RR_FLOAT, float(num_str))
+        return Token(ME_FLOAT, float(num_str))
  
 def run(fn, text):
   lexer = Lexer(fn, text)
   tokens = lexer.make_tokens()
   return tokens
+#------------------------------------------------------
