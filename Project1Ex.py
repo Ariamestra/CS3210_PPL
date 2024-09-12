@@ -11,11 +11,11 @@ class Token:
         return f"{self.type}"
 
 # Token Types
-RR_INT  = 'RR_INT'
-RR_FLOAT = 'RR_FLOAT'
-RR_PLUS  = 'RR_PLUS'
-RR_MINUS = 'RR_MINUS'
-RR_ILLEGAL = 'RR_ILLEGAL'
+ME_INT  = 'ME_INT'
+ME_FLOAT = 'ME_FLOAT'
+ME_PLUS  = 'ME_PLUS'
+ME_MINUS = 'ME_MINUS'
+ME_ILLEGAL = 'ME_ILLEGAL'
 
 class Lexer: # Converts input to tokens
     def __init__(self, text):
@@ -39,10 +39,10 @@ class Lexer: # Converts input to tokens
             elif self.current_char in DIGITS:
                 tokens.append(self.make_digit())
             elif self.current_char == '+':
-                tokens.append(Token(RR_PLUS))
+                tokens.append(Token(ME_PLUS))
                 self.advance()
             elif self.current_char == '-':
-                tokens.append(Token(RR_MINUS))
+                tokens.append(Token(ME_MINUS))
                 self.advance()
             else:
                 tokens.append(self.make_illegal())
@@ -53,13 +53,13 @@ class Lexer: # Converts input to tokens
         while self.current_char is not None and self.current_char in DIGITS:
             num_str += self.current_char
             self.advance()
-        return Token(RR_INT, int(num_str))
+        return Token(ME_INT, int(num_str))
 
     def make_illegal(self): # Handle illegal characters
         illegal_char = self.current_char
         self.advance()  # Move past the illegal character
         print(f"Illegal Character: '{illegal_char}'")
-        return Token(RR_ILLEGAL, illegal_char)
+        return Token(ME_ILLEGAL, illegal_char)
 
 def run(text):
     lexer = Lexer(text)
