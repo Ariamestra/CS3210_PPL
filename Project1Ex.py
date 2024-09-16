@@ -3,6 +3,24 @@
 # Sep 19, 2024 - 10:24
 #-------------------------------------------
 #Project1Ex.py 
+import re
+
+'''
+M@E > 1+2
+[ME_INT:1, ME_PLUS, ME_INT:2]
+M@E > 2-1
+[ME_INT:2, ME_MINUS, ME_INT:1]
+M@E > 4*5
+[ME_INT:4, ME_MULTIPLY, ME_INT:5]
+M@E > 8/4
+[ME_INT:8, ME_DIVIDE, ME_INT:4]
+M@E > (1+2)*3
+[ME_LPAREN, ME_INT:1, ME_PLUS, ME_INT:2, ME_RPAREN, ME_MULTIPLY, ME_INT:3]
+M@E > d+1
+Illegal Character: 'd'
+File <stdin>, line 1, column 1
+[ME_ILLEGAL:d, ME_PLUS, ME_INT:1]
+'''
 
 DIGITS = '0123456789'
 
@@ -43,11 +61,11 @@ ME_INT = 'ME_INT'
 ME_FLOAT = 'ME_FLOAT'
 ME_PLUS = 'ME_PLUS'
 ME_MINUS = 'ME_MINUS'
-ME_ILLEGAL = 'ME_ILLEGAL'
 ME_MULTIPLY = 'ME_MULTIPLY'
 ME_DIVIDE = 'ME_DIVIDE'
 ME_LPAREN = 'ME_LPAREN'
 ME_RPAREN = 'ME_RPAREN'
+ME_ILLEGAL = 'ME_ILLEGAL'
 
 # Lexer class that tokenizes input
 class Lexer:
@@ -56,6 +74,20 @@ class Lexer:
         self.pos = Position(-1, 1, 0, fn, text)  # Initialize with a Position object
         self.current_char = None
         self.advance()
+        '''
+        self.text = text
+        self.tokens = []
+        self.token_specification = [
+            (ME_INT, r'\d+'),
+            (ME_PLUS, r'\+'),
+            (ME_MINUS, r'\-'),
+            (ME_MULTIPLY, r'\*'),
+            (ME_DIVIDE, r'\/'),
+            (ME_LPAREN, r'\('),
+            (ME_RPAREN, r'\)'),
+        ]
+        self.token_regex = '|'.join(f'(?P<{type_}>{regex})' for type_, regex in self.token_specification)
+        '''
 
     def advance(self):
         self.pos.advance(self.current_char)
@@ -110,6 +142,7 @@ def run(text):
     tokens = lexer.make_tokens()
     return tokens
 
+'''
 # Test cases
 print(run("1 + 2"))
 print(run("2 - 1"))
@@ -117,7 +150,7 @@ print(run("4 * 5"))
 print(run("8 / 4"))
 print(run("(1 + 2) * 3"))
 print(run("d + 1"))
-
+'''
 
 
 
