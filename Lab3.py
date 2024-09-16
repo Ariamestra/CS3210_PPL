@@ -34,10 +34,12 @@ num_plus_5 = list(map(lambda x: x+5, int))
 print("--------------Question 3---------------------")
 print("Numbers Plus 5:", num_plus_5)
 
-div_by_3 = list(filter(lambda x: x % 3 == 0, int))
+div_by_3 = list(filter(lambda x: x % 3 == 0, num_plus_5))
 print("Divisible by 3:", div_by_3)
 
-sum_of_num = reduce(lambda x, y: x+y, div_by_3)
+# not_div_by_3 = int - div_by_3--------------------
+
+sum_of_num = reduce(lambda x, y: x+y, not_div_by_3)
 print("Sum of Numbers Divisible by 3:", sum_of_num)
 print("--------------------------------------------")
 
