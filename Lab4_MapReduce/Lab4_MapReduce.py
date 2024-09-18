@@ -26,7 +26,7 @@ def count_word_occurrences(words):
 
 # Using Functions
 
-filename = 'c:\\Users\\rranjidh\\Documents\words.txt'  # Replace with the path to your file
+filename = 'https://raw.githubusercontent.com/Ariamestra/CS3210_PPL/refs/heads/main/Lab4_MapReduce/words.txt'  
 
 words = read_words_from_file(filename)
 
