@@ -1,10 +1,10 @@
 # Maria Estrada - Due Sunday Sep 22, 2024
 
-#Convert the given code using maps and reduce to simulate the MapReduce algorithm. MapReduce is the main batch processing framework from the Apache Hadoop project. Google developed it and published an article describing the concept in 2004.
-
 from collections import defaultdict
 import re
+from functools import reduce
 
+# Function to read words from the file
 def read_words_from_file(filename):
     """Reads words from a file, removes punctuation, and returns a list of words."""
     with open(filename, 'r') as file:
@@ -14,24 +14,48 @@ def read_words_from_file(filename):
         text = re.sub(r'[^\w\s]', '', text)
         return text.split()
 
-def count_word_occurrences(words):
-    """Counts occurrences of each word using a dictionary."""
-    word_count = defaultdict(int)  # Dictionary to store word counts
-    # Loop through each word and update its count
+# Count the number of words
+def map_words_to_count(words):
+    return list(map(lambda word: (word, 1), words))
 
-    for word in words:
-        word_count[word] += 1
+# Combine each word using defaultdict
+def add_word_counts(mapped_words):
+    word_count = defaultdict(int)
+    
+    # Update word count
+    def update_WC(accumulator, word_count_pair):
+        word, count = word_count_pair
+        accumulator[word] += count 
+        return accumulator
+    
+    # Accumulate counts
+    return reduce(update_WC, mapped_words, word_count)
 
-    return word_count
-
-# Using Functions
-
-filename = 'https://raw.githubusercontent.com/Ariamestra/CS3210_PPL/refs/heads/main/Lab4_MapReduce/words.txt'  
+filename = '/workspaces/CS3210_PPL/Lab4_MapReduce/words.txt'
 
 words = read_words_from_file(filename)
 
-word_count = count_word_occurrences(words)
+mapped_words = map_words_to_count(words)
 
-# Print the word counts
+word_count = add_word_counts(mapped_words)
+
+# Print 
 for word, count in word_count.items():
     print(f"'{word}': {count}")
+
+'''
+'hello': 1
+'cs3210': 1
+'this': 2
+'lab': 2
+'will': 2
+'help': 2
+'you': 2
+'to': 2
+'learn': 2
+'map': 2
+'and': 2
+'reduce': 2
+'i': 1
+'repeat': 1
+'''
