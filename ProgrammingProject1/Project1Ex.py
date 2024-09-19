@@ -1,10 +1,7 @@
 # Maria Estrada 
 #Programming Project 1 - Due Sep 22
-# Sep 19, 2024 - 10:24
+# Sep 19, 2024 - About 2.5 hours to complete
 #-------------------------------------------
-#Project1Ex.py 
-import re
-
 '''
 M@E > 1+2
 [ME_INT:1, ME_PLUS, ME_INT:2]
@@ -61,11 +58,11 @@ ME_INT = 'ME_INT'
 ME_FLOAT = 'ME_FLOAT'
 ME_PLUS = 'ME_PLUS'
 ME_MINUS = 'ME_MINUS'
+ME_ILLEGAL = 'ME_ILLEGAL'
 ME_MULTIPLY = 'ME_MULTIPLY'
 ME_DIVIDE = 'ME_DIVIDE'
 ME_LPAREN = 'ME_LPAREN'
 ME_RPAREN = 'ME_RPAREN'
-ME_ILLEGAL = 'ME_ILLEGAL'
 
 # Lexer class that tokenizes input
 class Lexer:
@@ -74,20 +71,6 @@ class Lexer:
         self.pos = Position(-1, 1, 0, fn, text)  # Initialize with a Position object
         self.current_char = None
         self.advance()
-        '''
-        self.text = text
-        self.tokens = []
-        self.token_specification = [
-            (ME_INT, r'\d+'),
-            (ME_PLUS, r'\+'),
-            (ME_MINUS, r'\-'),
-            (ME_MULTIPLY, r'\*'),
-            (ME_DIVIDE, r'\/'),
-            (ME_LPAREN, r'\('),
-            (ME_RPAREN, r'\)'),
-        ]
-        self.token_regex = '|'.join(f'(?P<{type_}>{regex})' for type_, regex in self.token_specification)
-        '''
 
     def advance(self):
         self.pos.advance(self.current_char)
@@ -142,15 +125,6 @@ def run(text):
     tokens = lexer.make_tokens()
     return tokens
 
-'''
-# Test cases
-print(run("1 + 2"))
-print(run("2 - 1"))
-print(run("4 * 5"))
-print(run("8 / 4"))
-print(run("(1 + 2) * 3"))
-print(run("d + 1"))
-'''
 
 
 
