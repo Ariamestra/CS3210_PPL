@@ -2,22 +2,6 @@
 #Programming Project 1 - Due Sep 22
 # Sep 19, 2024 - About 2.5 hours to complete
 #-------------------------------------------
-'''
-M@E > 1+2
-[ME_INT:1, ME_PLUS, ME_INT:2]
-M@E > 2-1
-[ME_INT:2, ME_MINUS, ME_INT:1]
-M@E > 4*5
-[ME_INT:4, ME_MULTIPLY, ME_INT:5]
-M@E > 8/4
-[ME_INT:8, ME_DIVIDE, ME_INT:4]
-M@E > (1+2)*3
-[ME_LPAREN, ME_INT:1, ME_PLUS, ME_INT:2, ME_RPAREN, ME_MULTIPLY, ME_INT:3]
-M@E > d+1
-Illegal Character: 'd'
-File <stdin>, line 1, column 1
-[ME_ILLEGAL:d, ME_PLUS, ME_INT:1]
-'''
 
 DIGITS = '0123456789'
 
@@ -64,6 +48,24 @@ ME_DIVIDE = 'ME_DIVIDE'
 ME_LPAREN = 'ME_LPAREN'
 ME_RPAREN = 'ME_RPAREN'
 
+# NumberNode class to represent numbers in the abstract syntax tree (AST)
+class NumberNode:
+    def __init__(self, token):
+        self.token = token
+
+    def __repr__(self):
+        return f"{self.token.value}"
+
+# OperationNode class to represent operations in the AST
+class OperationNode:
+    def __init__(self, left_node, op_token, right_node):
+        self.left_node = left_node
+        self.op_token = op_token
+        self.right_node = right_node
+
+    def __repr__(self):
+        return f"({self.left_node} {self.op_token.type} {self.right_node})"
+
 # Lexer class that tokenizes input
 class Lexer:
     def __init__(self, text, fn="<stdin>"):
@@ -75,6 +77,12 @@ class Lexer:
     def advance(self):
         self.pos.advance(self.current_char)
         self.current_char = self.text[self.pos.index] if self.pos.index < len(self.text) else None
+
+    def factor(self):
+        token = self.current_token
+        if token.type in (ME_INT, ME_FLOAT):
+            self.advance() 
+        return NumberNode(token)
 
     def make_tokens(self):
         tokens = []
@@ -119,12 +127,33 @@ class Lexer:
         print(f"Illegal Character: '{illegal_char}'")
         print(f"File {self.pos.fn}, line {pos_copy.line_num}, column {pos_copy.column_num}")
         return Token(ME_ILLEGAL, illegal_char)
+    
+    def term(self):
+        left = self.factor()
+        opTree = left
+        while self.current_token is not None and self.current_token.type in (ME_MULTIPLY, ME_DIVIDE):
+            op_token = self.current_token
+            self.advance()  # move to the next token
+            right = self.factor()
+            opTree = OperationNode(left, op_token, right)
+            left = opTree  # Update left for the next loop iteration
+        return opTree
+
+    def expression(self):
+        left = self.term()
+        opTree = left
+        while self.current_token is not None and self.current_token.type in (ME_PLUS, ME_MINUS):
+            op_token = self.current_token
+            self.advance()  # move to the next token
+            right = self.term()
+            opTree = OperationNode(left, op_token, right)
+            left = opTree  # Update left for the next loop iteration
+        return opTree
 
 def run(text):
     lexer = Lexer(text)
     tokens = lexer.make_tokens()
     return tokens
-
 
 
 
