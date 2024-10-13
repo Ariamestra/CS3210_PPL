@@ -1,51 +1,7 @@
 # Maria Estrada 
-#Programming Project 1 - Due Sep 22
-# Sep 19, 2024 - About 2.5 hours to complete
+# Programming Project 2 - Due Oct 20
 #-------------------------------------------
-
-DIGITS = '0123456789'
-
-# Class to track the current position
-class Position:
-    def __init__(self, index, line_num, column_num, fn, text):
-        self.index = index
-        self.line_num = line_num
-        self.column_num = column_num
-        self.fn = fn
-        self.text = text
-
-    def advance(self, current_char=None):
-        self.index += 1
-        self.column_num += 1
-        if current_char == '\n':
-            self.line_num += 1
-            self.column_num = 0
-        return self
-
-    def copy(self):
-        return Position(self.index, self.line_num, self.column_num, self.fn, self.text)
-
-# Token class to represent the type and value of tokens
-class Token:
-    def __init__(self, type_, value=None):
-        self.type = type_
-        self.value = value
-
-    def __repr__(self):
-        if self.value is not None:
-            return f"RR_{self.type}:{self.value}"
-        return f"RR_{self.type}"
-
-# Token Types
-ME_INT = 'ME_INT'
-ME_FLOAT = 'ME_FLOAT'
-ME_PLUS = 'ME_PLUS'
-ME_MINUS = 'ME_MINUS'
-ME_ILLEGAL = 'ME_ILLEGAL'
-ME_MULTIPLY = 'ME_MULTIPLY'
-ME_DIVIDE = 'ME_DIVIDE'
-ME_LPAREN = 'ME_LPAREN'
-ME_RPAREN = 'ME_RPAREN'
+from lexer import DIGITS, Token, ME_INT, ME_PLUS, ME_MINUS, ME_MULTIPLY, ME_DIVIDE, ME_LPAREN, ME_RPAREN, ME_ILLEGAL, Position
 
 # Base class for nodes in AST
 class ASTNode:
@@ -69,7 +25,6 @@ class Num(ASTNode):
     def __repr__(self):
         return f'ME_INT:{self.value}'
 
-# Parser is responsible for tokenizing input and parsing it into an AST
 class Parser:
     def __init__(self, text, fn="<stdin>"):
         self.text = text
@@ -80,15 +35,21 @@ class Parser:
         self.token_idx = -1  
         self.advance()  
 
+    #Advance to the next token
     def advance(self):
         self.token_idx += 1
         if self.token_idx < len(self.tokens):
             self.current_token = self.tokens[self.token_idx]
+        else:
+            self.current_token = None
         return self.current_token
 
     # Begin parsing the input
     def parse(self):
-        return self.expression()
+        result = self.expression()
+        if self.current_token is not None:
+            raise Exception(f"Unexpected token: {self.current_token}")
+        return result
 
     # Tokenize the input string into a list of tokens
     def make_tokens(self):
@@ -122,7 +83,7 @@ class Parser:
                 self.advance_char()
         return tokens
 
-    # Move to the next character 
+    # Advances to the next character in the input string
     def advance_char(self):
         self.pos.advance(self.current_char)
         self.current_char = self.text[self.pos.index] if self.pos.index < len(self.text) else None
@@ -144,46 +105,39 @@ class Parser:
         print(f"File {self.pos.fn}, line {pos_copy.line_num}, column {pos_copy.column_num}")
         return Token(ME_ILLEGAL, illegal_char)
 
-    # Parse a factor - int or float
+    # Parse a factor - int or parentheses
     def factor(self):
         token = self.current_token
-        if token.type in (ME_INT, ME_FLOAT): 
+        if token.type == ME_INT:
             self.advance()
             return Num(token)
+        elif token.type == ME_LPAREN:
+            self.advance()
+            expr = self.expression()
+            if self.current_token is not None and self.current_token.type == ME_RPAREN:
+                self.advance()
+                return expr
+            else:
+                raise Exception("Missing closing parenthesis")
+        else:
+            raise Exception(f"Unexpected token: {token}")
 
-    # Parse a factor - mul or div
+    # Parse a term - mul or div
     def term(self):
         left = self.factor()
-        while self.current_token.type in (ME_MULTIPLY, ME_DIVIDE):
+        while self.current_token is not None and self.current_token.type in (ME_MULTIPLY, ME_DIVIDE):
             op_token = self.current_token
             self.advance()
             right = self.factor()
             left = BinOp(left, op_token, right)
         return left
 
-      # Parse a factor - plus or minus
+    # Parse an expression - plus or minus
     def expression(self):
         left = self.term()
-        while self.current_token.type in (ME_PLUS, ME_MINUS):
+        while self.current_token is not None and self.current_token.type in (ME_PLUS, ME_MINUS):
             op_token = self.current_token
             self.advance()
             right = self.term()
             left = BinOp(left, op_token, right)
         return left
-
-def run(text):
-    parser = Parser(text)
-    AST = parser.parse()
-    return AST
-
-'''
-$ python3 Main.py
-M@E > 1+2*3
-(ME_INT:1, RR_ME_PLUS, (ME_INT:2, RR_ME_MULTIPLY, ME_INT:3))
-M@E > 1+4*5+1*3
-((ME_INT:1, RR_ME_PLUS, (ME_INT:4, RR_ME_MULTIPLY, ME_INT:5)), RR_ME_PLUS, (ME_INT:1, RR_ME_MULTIPLY, ME_INT:3))
-'''
-
-
-
-
