@@ -1,7 +1,7 @@
 # Maria Estrada 
 # Programming Project 2 - Due Oct 20
 #-------------------------------------------
-from lexer import DIGITS, Token, ME_INT, ME_PLUS, ME_MINUS, ME_MULTIPLY, ME_DIVIDE, ME_LPAREN, ME_RPAREN, ME_ILLEGAL, Position
+from lexer import DIGITS, Token, ME_INT, ME_FLOAT, ME_PLUS, ME_MINUS, ME_MULTIPLY, ME_DIVIDE, ME_LPAREN, ME_RPAREN, ME_ILLEGAL, Position
 
 # Base class for nodes in AST
 class ASTNode:
@@ -89,12 +89,31 @@ class Parser:
         self.current_char = self.text[self.pos.index] if self.pos.index < len(self.text) else None
 
     # Create a token for a number by reading digits from the input
+    '''
     def make_digit(self):
         num_str = ''
         while self.current_char is not None and self.current_char in DIGITS:
             num_str += self.current_char
             self.advance_char()
         return Token(ME_INT, int(num_str))
+    '''
+    # Create a token for a number by reading digits from the input
+    def make_digit(self):
+        num_str = ''
+        dot_count = 0  # Track if there's more than one dot
+        while self.current_char is not None and (self.current_char in DIGITS or self.current_char == '.'):
+            if self.current_char == '.':
+                if dot_count == 1:  
+                    break
+                dot_count += 1
+            num_str += self.current_char
+            self.advance_char()
+        
+        if dot_count == 0:
+            return Token(ME_INT, int(num_str))  # No dot means it's an integer
+        else:
+            return Token(ME_FLOAT, float(num_str))  # One dot means it's a float
+
 
     # Handle illegal characters
     def make_illegal(self):
@@ -104,7 +123,7 @@ class Parser:
         print(f"Illegal Character: '{illegal_char}'")
         print(f"File {self.pos.fn}, line {pos_copy.line_num}, column {pos_copy.column_num}")
         return Token(ME_ILLEGAL, illegal_char)
-
+    '''
     # Parse a factor - int or parentheses
     def factor(self):
         token = self.current_token
@@ -121,6 +140,23 @@ class Parser:
                 raise Exception("Missing closing parenthesis")
         else:
             raise Exception(f"Unexpected token: {token}")
+        '''
+    def factor(self):
+        token = self.current_token
+        if token.type == ME_INT or token.type == ME_FLOAT:  # Handle both int and float
+            self.advance()
+            return Num(token)
+        elif token.type == ME_LPAREN:
+            self.advance()
+            expr = self.expression()
+            if self.current_token is not None and self.current_token.type == ME_RPAREN:
+                self.advance()
+                return expr
+            else:
+                raise Exception("Missing closing parenthesis")
+        else:
+            raise Exception(f"Unexpected token: {token}")
+
 
     # Parse a term - mul or div
     def term(self):

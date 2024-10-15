@@ -1,3 +1,4 @@
 Expression -> Term ((PLUS | MINUS) Term)*
 Term -> Factor ((MUL | DIV) Factor)*
-Factor -> INTEGER | LPAREN Expression RPAREN
+Factor -> INT | FLOAT | LPAREN expr RPAREN
+

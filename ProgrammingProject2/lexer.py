@@ -39,6 +39,7 @@ class Token:
 
 # Token Types
 ME_INT = 'ME_INT'
+ME_FLOAT = 'ME_FLOAT'
 ME_PLUS = 'ME_PLUS'
 ME_MINUS = 'ME_MINUS'
 ME_MULTIPLY = 'ME_MULTIPLY'
