@@ -1,4 +1,6 @@
-Test Cases
+# Maria Estrada 
+# Programming Project 2 - Due Oct 20
+#-------------------------------------------
 
 1 + 2 * 3
 1+4*5+1*3
