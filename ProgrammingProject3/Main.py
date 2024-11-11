@@ -3,23 +3,55 @@
 # Main.py
 #-------------------------------------------
 from parser import Parser
+from evaluator import eval_ast  # Import the evaluator function from evaluator.py
+'''
+def evaluate_expression(expression):
+    parser = Parser(expression)
+    try:
+        ast = parser.parse()
+        result = eval_ast(ast)  # Evaluates the AST to get the final result
+        return f"{expression} = {result}"
+    except SyntaxError as e:
+        return f"{expression}            {e}"
+'''   
+def evaluate_expression(expression):
+    try:
+        parser = Parser(expression)
+        ast = parser.parse()
+        result = eval_ast(ast)  # Evaluates the AST to get the final result
+        return f"{expression} = {result}"
+    except Exception as e:
+        # Displaying any errors, including unexpected tokens or syntax issues
+        return f"{expression}            {e}"
 
-def run(text):
-    parser = Parser(text)
-    AST = parser.parse()
-    return AST
+# Run the test cases
+test_cases = [
+    "1+2+3+4", 
+    "1*2*3*4", 
+    "1-2-3-4", 
+    "1/2/3/4", 
+    "1*2+3*4", 
+    "1+2*3+4",
+    "(1+2)*(3+4)", 
+    "1+(2*3)*(4+5)", 
+    "1+(2*3)/4+5", 
+    "5/(4+3)/2", 
+    "1 + 2.5", 
+    "125", 
+    "-1", 
+    "-1+(-2)", 
+    "-1+(-2.0)", 
+    "1*2,5", 
+    "1*2.5e2", 
+    "M1 + 2.5", 
+    "1 + 2&5", 
+    "1 * 2.5.6", 
+    "1 ** 2.5",
+    "*1 / 2.5", 
+    "(1 + 2) > (2 * 1)", 
+    "(3 * 2) == 6", 
+    "10 != 5 + 5"
+]
 
-if __name__ == "__main__":
-    print("If you want to exit enter 'exit' ")
-    while True:
-        expr = input("M@E > ")
-        if expr.lower() == 'exit':
-            break
-        try:
-            parser = Parser(expr)
-            ast = parser.parse()
-            print(ast)
-            print(" ")
-        except Exception as e:
-            print("Error:", e)
-            print(" ")
+for test in test_cases:
+    print(evaluate_expression(test))

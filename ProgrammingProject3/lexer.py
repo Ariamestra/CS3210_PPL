@@ -1,6 +1,6 @@
 # Maria Estrada 
 # Programming Project 3 - Due Dec 1
-# lexer.py
+# lexer.py - may need to delete
 #-------------------------------------------
 
 DIGITS = '0123456789'
@@ -48,3 +48,12 @@ ME_DIVIDE = 'ME_DIVIDE'
 ME_LPAREN = 'ME_LPAREN'
 ME_RPAREN = 'ME_RPAREN'
 ME_ILLEGAL = 'ME_ILLEGAL'
+ME_AND = 'ME_AND' # Handle logical operators (AND)
+ME_OR = 'ME_OR' # Handle logical operators (OR)
+ME_NOT = 'ME_NOT' # Handle logical operators (NOT)
+ME_EQ = 'ME_EQ' # (==)
+ME_NEQ = 'ME_NEQ' # (!=)
+ME_LT = 'ME_LT' # (<)
+ME_GT = 'ME_GT' # (>)
+ME_LTE = 'ME_LTE' # (<=)
+ME_GTE = 'ME_GTE'# (>=)
