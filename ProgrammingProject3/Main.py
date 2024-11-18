@@ -4,16 +4,7 @@
 #-------------------------------------------
 from parser import Parser
 from evaluator import eval_ast  # Import the evaluator function from evaluator.py
-'''
-def evaluate_expression(expression):
-    parser = Parser(expression)
-    try:
-        ast = parser.parse()
-        result = eval_ast(ast)  # Evaluates the AST to get the final result
-        return f"{expression} = {result}"
-    except SyntaxError as e:
-        return f"{expression}            {e}"
-'''   
+
 def evaluate_expression(expression):
     try:
         parser = Parser(expression)
