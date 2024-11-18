@@ -1,7 +1,6 @@
 # Maria Estrada 
 # Programming Project 3 - Due Dec 1
 #-----------------------------------------------
-# Main.py
 DIGITS = '0123456789'
 
 class ASTNode:
