@@ -4,50 +4,50 @@ class Token:
         self.value = value
         self.pos = pos
 
+    def __repr__(self):
+        return f"Token({self.type}, {self.value}, {self.pos})"
+
+
 class Parser:
     def __init__(self, text):
-        self.text = text.replace(' ', '')  # Remove whitespace
+        self.text = text  # Preserve the original input
+        self.clean_text = text.replace(' ', '')  # Remove spaces for processing
         self.pos = 0
         self.tokens = self.tokenize()
 
     def tokenize(self):
         tokens = []
-        while self.pos < len(self.text):
-            # Handle digits (including negative numbers and decimals)
-            if self.text[self.pos].isdigit() or \
-               (self.text[self.pos] == '-' and self.pos+1 < len(self.text) and self.text[self.pos+1].isdigit()):
+        while self.pos < len(self.clean_text):
+            # Handle numbers (integers and decimals)
+            if self.clean_text[self.pos].isdigit() or \
+               (self.clean_text[self.pos] == '-' and self.pos + 1 < len(self.clean_text) and self.clean_text[self.pos + 1].isdigit()):
                 num_start = self.pos
-                # Handle negative number
-                if self.text[self.pos] == '-':
+                if self.clean_text[self.pos] == '-':
                     self.pos += 1
-                
-                # Parse number (integer or float)
-                while self.pos < len(self.text) and (self.text[self.pos].isdigit() or self.text[self.pos] == '.'):
+                while self.pos < len(self.clean_text) and (self.clean_text[self.pos].isdigit() or self.clean_text[self.pos] == '.'):
                     self.pos += 1
-                
-                num_str = self.text[num_start:self.pos]
+                num_str = self.clean_text[num_start:self.pos]
                 try:
-                    # Check for multiple decimal points
                     if num_str.count('.') > 1:
-                        raise ValueError(f"Invalid number format: {num_str}")
-                    
+                        # Find the second dot for accurate error reporting
+                        second_dot = num_str.find('.', num_str.find('.') + 1)
+                        raise ValueError(f"Unexpected token '.' at position {self.original_position(num_start + second_dot)}")
                     value = float(num_str) if '.' in num_str else int(num_str)
-                    tokens.append(Token('NUMBER', value, num_start))
+                    tokens.append(Token('NUMBER', value, self.original_position(num_start)))
                 except ValueError:
-                    raise ValueError(f"Invalid number: {num_str} at position {num_start}")
+                    raise ValueError(f"Invalid number: {num_str} at position {self.original_position(num_start)}")
                 continue
 
-            # Handle operators and parentheses
-            if self.text[self.pos] in '+-*/()><=!':
-                # Handle multi-character operators
-                if self.pos + 1 < len(self.text):
-                    two_char_op = self.text[self.pos:self.pos+2]
+            # Handle operators and unexpected characters
+            if self.clean_text[self.pos] in '+-*/()><=!,':
+                if self.clean_text[self.pos] == ',':
+                    raise ValueError(f"Unexpected token ',' at position {self.original_position(self.pos)}")
+                if self.pos + 1 < len(self.clean_text):
+                    two_char_op = self.clean_text[self.pos:self.pos + 2]
                     if two_char_op in ['==', '!=', '<=', '>=']:
-                        tokens.append(Token(two_char_op, two_char_op, self.pos))
+                        tokens.append(Token(two_char_op, two_char_op, self.original_position(self.pos)))
                         self.pos += 2
                         continue
-
-                # Single character operators
                 op_map = {
                     '+': 'PLUS',
                     '-': 'MINUS',
@@ -60,13 +60,22 @@ class Parser:
                     '=': 'EQ',
                     '!': 'NOT'
                 }
-                tokens.append(Token(op_map[self.text[self.pos]], self.text[self.pos], self.pos))
+                tokens.append(Token(op_map[self.clean_text[self.pos]], self.clean_text[self.pos], self.original_position(self.pos)))
                 self.pos += 1
             else:
-                # Unexpected character
-                raise ValueError(f"Unexpected token '{self.text[self.pos]}' at position {self.pos}")
-
+                raise ValueError(f"Unexpected token '{self.clean_text[self.pos]}' at position {self.original_position(self.pos)}")
         return tokens
+
+    def original_position(self, clean_pos):
+        original_pos = 0
+        clean_index = 0
+        for i, char in enumerate(self.text):
+            if char == ' ':
+                continue  # Skip spaces in the original string
+            if clean_index == clean_pos:
+                return i
+            clean_index += 1
+        return -1  # Return -1 if the position is invalid
 
     def parse(self):
         def expression():
@@ -111,7 +120,6 @@ class Parser:
                 node = self.current_token
                 self.advance()
                 return node
-            
             if self.current_token and self.current_token.type == 'LPAREN':
                 self.advance()
                 node = expression()
@@ -119,10 +127,8 @@ class Parser:
                     raise ValueError("Expected closing parenthesis")
                 self.advance()
                 return node
-            
-            raise ValueError(f"Unexpected token {self.current_token}")
+            raise ValueError(f"Unexpected token '{self.current_token.value}' at position {self.current_token.pos}")
 
-        # Initialize parsing
         self.current_token = self.tokens[0] if self.tokens else None
         self.token_index = 0
         return expression()
@@ -130,6 +136,7 @@ class Parser:
     def advance(self):
         self.token_index += 1
         self.current_token = self.tokens[self.token_index] if self.token_index < len(self.tokens) else None
+
 
 def evaluate(node):
     if isinstance(node, Token):
@@ -163,6 +170,7 @@ def evaluate(node):
 
     raise ValueError("Invalid node type")
 
+
 def Test(expression):
     try:
         parser = Parser(expression)
@@ -170,37 +178,36 @@ def Test(expression):
         result = evaluate(parsed)
         print(f"{expression} = {result}")
     except Exception as e:
-        print(f"{expression}            {str(e)}")
+        print(f"{expression}         {str(e)}")
 
-# Test cases
+
 test_cases = [
-    "1+2+3+4", 
-    "1*2*3*4", 
-    "1-2-3-4", 
-    "1/2/3/4", 
-    "1*2+3*4", 
+    "1+2+3+4",
+    "1*2*3*4",
+    "1-2-3-4",
+    "1/2/3/4",
+    "1*2+3*4",
     "1+2*3+4",
-    "(1+2)*(3+4)", 
-    "1+(2*3)*(4+5)", 
-    "1+(2*3)/4+5", 
-    "5/(4+3)/2", 
-    "1 + 2.5", 
-    "125", 
-    "-1", 
-    "-1+(-2)", 
-    "-1+(-2.0)", 
-    "1*2,5", 
-    "1*2.5e2", 
-    "M1 + 2.5", 
-    "1 + 2&5", 
-    "1 * 2.5.6", 
+    "(1+2)*(3+4)",
+    "1+(2*3)*(4+5)",
+    "1+(2*3)/4+5",
+    "5/(4+3)/2",
+    "1 + 2.5",
+    "125",
+    "-1",
+    "-1+(-2)",
+    "-1+(-2.0)",
+    "1*2,5",
+    "1*2.5e2",
+    "M1 + 2.5",
+    "1 + 2&5",
+    "1 * 2.5.6",
     "1 ** 2.5",
-    "*1 / 2.5", 
-    "(1 + 2) > (2 * 1)", 
-    "(3 * 2) == 6", 
+    "*1 / 2.5",
+    "(1 + 2) > (2 * 1)",
+    "(3 * 2) == 6",
     "10 != 5 + 5"
 ]
 
-# Run tests
 for test in test_cases:
     Test(test)
