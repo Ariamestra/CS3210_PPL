@@ -1,24 +1,29 @@
+# Maria Estrada 
+# Programming Project 3 - Due Dec 1
+#-----------------------------------------------
+
+# Represents Tokens
 class Token:
     def __init__(self, type_, value=None, pos=None):
-        self.type = type_
-        self.value = value
-        self.pos = pos
+        self.type = type_ 
+        self.value = value # Value of the Token
+        self.pos = pos # Position 
 
     def __repr__(self):
         return f"Token({self.type}, {self.value}, {self.pos})"
 
-
+# Takes a text input, tokenizes it, and parses it
 class Parser:
     def __init__(self, text):
-        self.text = text  # Preserve the original input
-        self.clean_text = text.replace(' ', '')  # Remove spaces for processing
+        self.text = text  # Keep original input
+        self.clean_text = text.replace(' ', '')  # Remove 
         self.pos = 0
         self.tokens = self.tokenize()
 
     def tokenize(self):
         tokens = []
         while self.pos < len(self.clean_text):
-            # Handle numbers (integers and decimals)
+            # Handle numbers 
             if self.clean_text[self.pos].isdigit() or \
                (self.clean_text[self.pos] == '-' and self.pos + 1 < len(self.clean_text) and self.clean_text[self.pos + 1].isdigit()):
                 num_start = self.pos
@@ -27,17 +32,18 @@ class Parser:
                 while self.pos < len(self.clean_text) and (self.clean_text[self.pos].isdigit() or self.clean_text[self.pos] == '.'):
                     self.pos += 1
                 num_str = self.clean_text[num_start:self.pos]
+
                 try:
+                    # Find more dots for error handling
                     if num_str.count('.') > 1:
-                        # Find the second dot for accurate error reporting
                         second_dot = num_str.find('.', num_str.find('.') + 1)
                         raise ValueError(f"Unexpected token '.' at position {self.original_position(num_start + second_dot)}")
                     value = float(num_str) if '.' in num_str else int(num_str)
                     tokens.append(Token('NUMBER', value, self.original_position(num_start)))
                 except ValueError:
-                    raise ValueError(f"Invalid number: {num_str} at position {self.original_position(num_start)}")
+                    raise ValueError(f"Unexpected token '{num_str}' at position {self.original_position(num_start)}")
                 continue
-
+            
             # Handle operators and unexpected characters
             if self.clean_text[self.pos] in '+-*/()><=!,':
                 if self.clean_text[self.pos] == ',':
@@ -57,8 +63,14 @@ class Parser:
                     ')': 'RPAREN',
                     '>': 'GT',
                     '<': 'LT',
+                    '>=': 'GTE',
+                    '<=': 'LTE',
                     '=': 'EQ',
-                    '!': 'NOT'
+                    '!': 'NOT',
+                    '!=': 'NEQ',
+                    '|':'OR',
+                    '&': 'AND'
+
                 }
                 tokens.append(Token(op_map[self.clean_text[self.pos]], self.clean_text[self.pos], self.original_position(self.pos)))
                 self.pos += 1
@@ -100,19 +112,19 @@ class Parser:
             return left
 
         def multiplication():
-            left = unary()
+            left = parse_negative()
             while self.current_token and self.current_token.type in ['MULTIPLY', 'DIVIDE']:
                 op = self.current_token
                 self.advance()
-                right = unary()
+                right = parse_negative()
                 left = {'type': 'binary', 'op': op, 'left': left, 'right': right}
             return left
 
-        def unary():
+        def parse_negative(): 
             if self.current_token and self.current_token.type in ['MINUS', 'NOT']:
                 op = self.current_token
                 self.advance()
-                return {'type': 'unary', 'op': op, 'expr': unary()}
+                return {'type': 'parse_negative', 'op': op, 'expr': parse_negative()}
             return primary()
 
         def primary():
@@ -137,7 +149,7 @@ class Parser:
         self.token_index += 1
         self.current_token = self.tokens[self.token_index] if self.token_index < len(self.tokens) else None
 
-
+# Evaluate the result of the expression.
 def evaluate(node):
     if isinstance(node, Token):
         return node.value
@@ -161,7 +173,7 @@ def evaluate(node):
         if op == '>=': return left >= right
         if op == '<=': return left <= right
 
-    if node['type'] == 'unary':
+    if node['type'] == 'parse_negative':
         value = evaluate(node['expr'])
         op = node['op'].type
 
@@ -170,7 +182,7 @@ def evaluate(node):
 
     raise ValueError("Invalid node type")
 
-
+# Test the expressions given
 def Test(expression):
     try:
         parser = Parser(expression)
